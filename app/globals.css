@@ -1040,17 +1040,17 @@ img {
   grid-template-columns: 1fr 1fr;
 }
 
+.social-login.facebook-only {
+  grid-template-columns: 1fr;
+}
+
 .social-login button {
   min-height: 44px;
   border-radius: 8px;
   border: 0;
   color: #fff;
-  background: #06c755;
-  font-weight: 950;
-}
-
-.social-login button + button {
   background: #1877f2;
+  font-weight: 950;
 }
 
 .auth-demo {

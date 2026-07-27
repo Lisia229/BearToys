@@ -24,7 +24,7 @@ type User = {
   email: string;
   name: string;
   role: "member" | "admin";
-  provider: "email" | "facebook" | "line";
+  provider: "email" | "facebook";
 };
 
 const currency = new Intl.NumberFormat("zh-TW", {
@@ -617,8 +617,7 @@ export default function Home() {
             {authTab === "login" && (
               <div className="auth-panel">
                 <h2>快速登入結帳</h2>
-                <div className="social-login">
-                  <button type="button" onClick={() => login("member", "line")}>LINE 登入</button>
+                <div className="social-login facebook-only">
                   <button type="button" onClick={() => login("member", "facebook")}>FACEBOOK 登入</button>
                 </div>
                 <input type="email" placeholder="Email Address / Account 會員帳號" />
@@ -630,8 +629,7 @@ export default function Home() {
             {authTab === "register" && (
               <div className="auth-panel">
                 <h2>快速加入會員</h2>
-                <div className="social-login">
-                  <button type="button" onClick={() => login("member", "line")}>LINE 註冊即送購物金</button>
+                <div className="social-login facebook-only">
                   <button type="button" onClick={() => login("member", "facebook")}>FACEBOOK 註冊登入</button>
                 </div>
                 <input type="email" placeholder="Email Address 電子信箱" />
@@ -731,7 +729,7 @@ function GuideContent({ tab }: { tab: string }) {
     );
   }
   if (tab === "會員常見問題") {
-    return <div className="guide-prose"><p>完成 E-mail、Facebook 或 LINE 登入後即可成為會員。會員中心可修改個人資料、查看訂單、申請退貨、管理收藏、查詢折價券與 points。</p></div>;
+    return <div className="guide-prose"><p>完成 E-mail 或 Facebook 登入後即可成為會員。會員中心可修改個人資料、查看訂單、申請退貨、管理收藏、查詢折價券與 points。</p></div>;
   }
   if (tab === "售後服務問題") {
     return <div className="guide-prose"><p>收到商品後 7 日內如有瑕疵，請至會員中心訂單查詢申請售後，並提供訂單編號、瑕疵照片與聯絡方式。</p></div>;
