@@ -48,14 +48,33 @@ img
   border-bottom: 1px solid rgba(53, 27, 19, 0.12)
   backdrop-filter: blur(14px)
 .promo-bar
+  position: relative
+  display: flex
+  align-items: center
   min-height: 34px
-  padding: 7px 16px
   overflow: hidden
   background: rgba(219, 234, 216, 0.76)
   color: var(--red)
-  text-align: center
   font-size: 0.84rem
   font-weight: 800
+.marquee-track
+  display: flex
+  width: max-content
+  min-width: 100%
+  align-items: center
+  gap: 44px
+  padding: 7px 16px
+  white-space: nowrap
+  animation: marquee-left 24s linear infinite
+.marquee-track span
+  flex: none
+.promo-bar:hover .marquee-track
+  animation-play-state: paused
+@keyframes marquee-left
+  from
+    transform: translateX(100%)
+  to
+    transform: translateX(-100%)
 .header-main
   display: grid
   grid-template-columns: 120px minmax(240px, 1fr) auto
@@ -722,6 +741,27 @@ img
   object-fit: cover
 .inline-select
   width: min(160px, 100%)
+.order-status-select
+  width: min(150px, 100%)
+.admin-alert, .cancel-request-box
+  display: grid
+  gap: 6px
+  padding: 12px
+  border: 1px solid #ffb36b
+  border-radius: 8px
+  background: #fff1df
+  color: var(--red)
+.admin-alert span, .cancel-request-box span
+  color: var(--muted)
+  font-weight: 800
+.cancel-request-box
+  margin-bottom: 2px
+.cancel-request-box .row-actions
+  justify-content: start
+.cancel-request-box button:first-child
+  border-color: var(--red)
+  color: #fff
+  background: var(--red)
 .admin-order-row,
 .admin-coupon-row,
 .announcement-row,

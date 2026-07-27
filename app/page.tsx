@@ -4,6 +4,7 @@ import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 
 type Page = "shop" | "product" | "favorites" | "checkout" | "guide" | "member" | "admin" | "about";
 type ProductStatus = "現貨" | "預購" | "完售";
+type OrderStatus = "待付款" | "待出貨" | "已出貨" | "已完成" | "取消申請中" | "已取消";
 
 type Product = {
   id: string;
@@ -30,7 +31,7 @@ type Order = {
   address: string;
   payment: string;
   total: number;
-  status: "待付款" | "待出貨" | "已出貨" | "已完成" | "已取消";
+  status: OrderStatus;
   items: { productName: string; qty: number; price: number }[];
 };
 
@@ -367,6 +368,8 @@ export default function Home() {
 
   const selectedProduct = products.find((product) => product.id === selectedProductId) ?? products[0];
   const categories = ["新品", "所有商品", "盲盒", "小賞", "一番賞", "吊飾", "公仔", "立牌"];
+  const activeAnnouncements = announcements.filter((announcement) => announcement.status === "顯示中");
+  const cancelRequestCount = orders.filter((order) => order.status === "取消申請中").length;
 
   const filteredProducts = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -541,15 +544,22 @@ export default function Home() {
     );
   }
 
-  function cancelOrder(orderId: string) {
+  function requestCancelOrder(orderId: string) {
     setOrders((current) =>
       current.map((order) =>
-        order.id === orderId && order.status !== "已完成"
-          ? { ...order, status: "已取消" }
+        (order.status === "待出貨" || order.status === "待付款") && order.id === orderId
+          ? { ...order, status: "取消申請中" }
           : order
       )
     );
-    setToast("訂單已取消");
+    setToast("已送出取消申請，等待管理員確認");
+  }
+
+  function updateOrderStatus(orderId: string, status: OrderStatus) {
+    setOrders((current) =>
+      current.map((order) => (order.id === orderId ? { ...order, status } : order))
+    );
+    setToast(status === "已取消" ? "訂單已確認取消" : "訂單狀態已更新");
   }
 
   function saveCoupon(draft: CouponDraft, editingId: string | null) {
@@ -613,8 +623,13 @@ export default function Home() {
   return (
     <main className="site-shell">
       <header className="topbar">
-        <div className="promo-bar">
-          熊賀勝新品補貨中，滿 $999 享 7-11 免運，Line Pay 結帳開放測試
+        <div className="promo-bar" aria-label="商店公告">
+          <div className="marquee-track">
+            {[...activeAnnouncements, ...activeAnnouncements].map((announcement, index) => (
+              <span key={`${announcement.id}-${index}`}>{announcement.content}</span>
+            ))}
+            {activeAnnouncements.length === 0 && <span>熊賀勝新品補貨中，滿 $999 享 7-11 免運</span>}
+          </div>
         </div>
         <div className="header-main">
           <button className="brand" type="button" onClick={() => navigate("shop")} aria-label="熊賀勝首頁">
@@ -905,7 +920,7 @@ export default function Home() {
                 user={user}
                 favorites={favorites}
                 orders={orders}
-                onCancelOrder={cancelOrder}
+                onCancelOrder={requestCancelOrder}
               />
             </>
           )}
@@ -928,7 +943,7 @@ export default function Home() {
                 <Metric label="本月營收" value={currency.format(184200)} />
                 <Metric label="訂單數" value="326" />
                 <Metric label="售出件數" value="812" />
-                <Metric label="熱銷類型" value="小賞" />
+                <Metric label="取消申請" value={`${cancelRequestCount} 筆`} />
               </div>
               <div className="admin-workspace">
                 <form className="admin-form" onSubmit={submitProduct}>
@@ -1043,6 +1058,7 @@ export default function Home() {
                     onSaveCoupon={saveCoupon}
                     onSaveAnnouncement={saveAnnouncement}
                     onUpdateMemberLevel={updateMemberLevel}
+                    onUpdateOrderStatus={updateOrderStatus}
                   />
                 </section>
               </div>
@@ -1275,7 +1291,7 @@ function MemberPanel({
                 </button>
                 {order.status === "待出貨" || order.status === "待付款" ? (
                   <button type="button" onClick={() => onCancelOrder(order.id)}>
-                    取消訂單
+                    申請取消
                   </button>
                 ) : null}
               </div>
@@ -1326,6 +1342,7 @@ function AdminPanel({
   onSaveCoupon,
   onSaveAnnouncement,
   onUpdateMemberLevel,
+  onUpdateOrderStatus,
 }: {
   tab: string;
   products: Product[];
@@ -1338,6 +1355,7 @@ function AdminPanel({
   onSaveCoupon: (draft: CouponDraft, editingId: string | null) => boolean;
   onSaveAnnouncement: (draft: AnnouncementDraft, editingId: string | null) => boolean;
   onUpdateMemberLevel: (memberId: string, level: string) => void;
+  onUpdateOrderStatus: (orderId: string, status: OrderStatus) => void;
 }) {
   const [openOrderId, setOpenOrderId] = useState<string | null>(null);
   const [openMemberId, setOpenMemberId] = useState<string | null>(null);
@@ -1369,20 +1387,55 @@ function AdminPanel({
   }
 
   if (tab === "近期訂單") {
+    const cancelRequests = orders.filter((order) => order.status === "取消申請中");
     return (
       <div className="admin-list">
         <h2>近期訂單</h2>
+        {cancelRequests.length > 0 && (
+          <div className="admin-alert">
+            <strong>有 {cancelRequests.length} 筆取消訂單申請</strong>
+            <span>請查看訂單明細後確認取消，確認前訂單不會變成已取消。</span>
+          </div>
+        )}
         {orders.map((order) => (
           <article className="order-card" key={order.id}>
             <div className="list-row admin-order-row">
               <span>{order.id} · {order.receiver}</span>
-              <strong>{currency.format(order.total)} / {order.status}</strong>
-              <button type="button" onClick={() => setOpenOrderId(openOrderId === order.id ? null : order.id)}>
-                {openOrderId === order.id ? "收合明細" : "查看明細"}
-              </button>
+              <strong>{currency.format(order.total)}</strong>
+              <div className="row-actions">
+                <select
+                  className="inline-select order-status-select"
+                  value={order.status}
+                  onChange={(event) => onUpdateOrderStatus(order.id, event.target.value as OrderStatus)}
+                >
+                  <option>待付款</option>
+                  <option>待出貨</option>
+                  <option>已出貨</option>
+                  <option>已完成</option>
+                  <option>取消申請中</option>
+                  <option>已取消</option>
+                </select>
+                <button type="button" onClick={() => setOpenOrderId(openOrderId === order.id ? null : order.id)}>
+                  {openOrderId === order.id ? "收合明細" : "查看明細"}
+                </button>
+              </div>
             </div>
             {openOrderId === order.id && (
               <div className="order-detail">
+                {order.status === "取消申請中" && (
+                  <div className="cancel-request-box">
+                    <strong>會員已提出取消申請</strong>
+                    <span>確認後才會正式取消這筆訂單；若不接受取消，可以將訂單保留為待出貨。</span>
+                    <div className="row-actions">
+                      <button type="button" onClick={() => onUpdateOrderStatus(order.id, "已取消")}>
+                        確認取消
+                      </button>
+                      <button type="button" onClick={() => onUpdateOrderStatus(order.id, "待出貨")}>
+                        保留訂單
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <dl>
                   <div><dt>訂單日期</dt><dd>{order.date}</dd></div>
                   <div><dt>收件人</dt><dd>{order.receiver}</dd></div>
