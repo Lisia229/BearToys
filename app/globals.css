@@ -18,8 +18,8 @@
 @theme inline {
   --color-background: var(--paper);
   --color-foreground: var(--ink);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-noto-sans-tc);
+  --font-mono: var(--font-montserrat);
 }
 
 * {
@@ -39,7 +39,7 @@ body {
     var(--paper);
   background-size: 32px 32px;
   color: var(--ink);
-  font-family: Arial, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+  font-family: var(--font-noto-sans-tc), "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
 }
 
 button,
@@ -125,6 +125,20 @@ img {
 .brand small {
   color: var(--muted);
   font-weight: 900;
+}
+
+.brand small,
+.icon-button,
+.cart-pill,
+.category-tabs button,
+.eyebrow,
+.section-heading h2,
+.product-meta strong,
+.detail-price,
+.metric strong,
+.site-footer h2,
+.auth-tabs button {
+  font-family: var(--font-montserrat), var(--font-noto-sans-tc), sans-serif;
 }
 
 .menu-toggle,
