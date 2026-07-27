@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useMemo, useState } from "react";
 
 type Page = "shop" | "product" | "favorites" | "checkout" | "guide" | "member" | "admin" | "about";
 type ProductStatus = "現貨" | "預購" | "完售";
@@ -15,9 +15,73 @@ type Product = {
   status: ProductStatus;
   isNew: boolean;
   color: string;
+  image?: string;
   description: string;
   productInfo: string;
   shippingNote: string;
+};
+
+type Order = {
+  id: string;
+  date: string;
+  receiver: string;
+  phone: string;
+  shipping: string;
+  address: string;
+  payment: string;
+  total: number;
+  status: "待付款" | "待出貨" | "已出貨" | "已完成" | "已取消";
+  items: { productName: string; qty: number; price: number }[];
+};
+
+type ProductDraft = {
+  name: string;
+  category: string;
+  price: string;
+  stock: string;
+  status: ProductStatus;
+  image: string;
+  description: string;
+};
+
+type Member = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+  level: string;
+  spent: number;
+  orders: number;
+  status: string;
+  address: string;
+  joinedAt: string;
+};
+
+type CouponStatus = "啟用中" | "停用";
+type CouponDraft = {
+  code: string;
+  title: string;
+  type: "fixed" | "percent";
+  value: string;
+  minOrder: string;
+  expiresAt: string;
+  status: CouponStatus;
+};
+type Coupon = Omit<CouponDraft, "value" | "minOrder"> & {
+  id: string;
+  value: number;
+  minOrder: number;
+};
+
+type AnnouncementStatus = "顯示中" | "隱藏";
+type AnnouncementDraft = {
+  title: string;
+  content: string;
+  status: AnnouncementStatus;
+};
+type Announcement = AnnouncementDraft & {
+  id: string;
+  updatedAt: string;
 };
 
 type User = {
@@ -33,7 +97,7 @@ const currency = new Intl.NumberFormat("zh-TW", {
   maximumFractionDigits: 0,
 });
 
-const products: Product[] = [
+const initialProducts: Product[] = [
   {
     id: "bt-blind-dessert",
     name: "Pop Mart 熊系甜點派對盲盒",
@@ -129,17 +193,162 @@ const guideTabs = [
   "165反詐騙",
 ];
 
-const demoOrders = [
-  { id: "B2026072701", date: "2026-07-27", total: 878, status: "待出貨", action: "申請退貨" },
-  { id: "B2026071904", date: "2026-07-19", total: 1260, status: "已完成", action: "查看明細" },
+const demoOrders: Order[] = [
+  {
+    id: "B2026072701",
+    date: "2026-07-27",
+    receiver: "陳小熊",
+    phone: "0912-345-678",
+    shipping: "7-11 取貨",
+    address: "高雄信國門市",
+    payment: "Line Pay",
+    total: 878,
+    status: "待出貨",
+    items: [
+      { productName: "Pop Mart 熊系甜點派對盲盒", qty: 2, price: 390 },
+      { productName: "熊賀勝限定幸運小賞組", qty: 1, price: 99 },
+    ],
+  },
+  {
+    id: "B2026071904",
+    date: "2026-07-19",
+    receiver: "陳小熊",
+    phone: "0912-345-678",
+    shipping: "宅配",
+    address: "高雄市三民區信國路 32 號",
+    payment: "Line Pay",
+    total: 1260,
+    status: "已完成",
+    items: [
+      { productName: "寶可夢迷你公仔盲抽盒", qty: 2, price: 320 },
+      { productName: "NARUTO 壓克力立牌收藏組", qty: 1, price: 580 },
+    ],
+  },
 ];
 
+const emptyProductDraft: ProductDraft = {
+  name: "",
+  category: "盲盒",
+  price: "",
+  stock: "",
+  status: "現貨",
+  image: "",
+  description: "",
+};
+
+function productToDraft(product: Product): ProductDraft {
+  return {
+    name: product.name,
+    category: product.category,
+    price: String(product.price),
+    stock: String(product.stock),
+    status: product.status,
+    image: product.image ?? "",
+    description: product.description,
+  };
+}
+
+const initialMembers: Member[] = [
+  {
+    id: "m-bear-001",
+    name: "陳小熊",
+    email: "member@bear-toys.test",
+    phone: "0912-345-678",
+    level: "金熊會員",
+    spent: 23880,
+    orders: 18,
+    status: "正常",
+    address: "高雄市三民區信國路 32 號",
+    joinedAt: "2025-11-08",
+  },
+  {
+    id: "m-bear-002",
+    name: "林美美",
+    email: "meimei@example.com",
+    phone: "0922-800-168",
+    level: "銀熊會員",
+    spent: 8640,
+    orders: 7,
+    status: "正常",
+    address: "高雄市左營區自由二路 88 號",
+    joinedAt: "2026-02-14",
+  },
+  {
+    id: "m-bear-003",
+    name: "王阿勝",
+    email: "sheng@example.com",
+    phone: "0933-776-520",
+    level: "新會員",
+    spent: 990,
+    orders: 1,
+    status: "需驗證",
+    address: "尚未填寫",
+    joinedAt: "2026-07-20",
+  },
+];
+
+const initialCoupons: Coupon[] = [
+  {
+    id: "coupon-bear100",
+    code: "BEAR100",
+    title: "滿 999 折 100",
+    type: "fixed",
+    value: 100,
+    minOrder: 999,
+    expiresAt: "2026-12-31",
+    status: "啟用中",
+  },
+];
+
+const initialAnnouncements: Announcement[] = [
+  {
+    id: "announce-free-shipping",
+    title: "跑馬燈公告",
+    content: "滿 999 享 7-11 免運，新品補貨會同步公告。",
+    status: "顯示中",
+    updatedAt: "2026-07-27",
+  },
+];
+
+const emptyCouponDraft: CouponDraft = {
+  code: "",
+  title: "",
+  type: "fixed",
+  value: "",
+  minOrder: "",
+  expiresAt: "",
+  status: "啟用中",
+};
+
+const emptyAnnouncementDraft: AnnouncementDraft = {
+  title: "",
+  content: "",
+  status: "顯示中",
+};
+
+function couponToDraft(coupon: Coupon): CouponDraft {
+  return {
+    code: coupon.code,
+    title: coupon.title,
+    type: coupon.type,
+    value: String(coupon.value),
+    minOrder: String(coupon.minOrder),
+    expiresAt: coupon.expiresAt,
+    status: coupon.status,
+  };
+}
+
 export default function Home() {
+  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [orders, setOrders] = useState<Order[]>(demoOrders);
+  const [members, setMembers] = useState<Member[]>(initialMembers);
+  const [coupons, setCoupons] = useState<Coupon[]>(initialCoupons);
+  const [announcements, setAnnouncements] = useState<Announcement[]>(initialAnnouncements);
   const [page, setPage] = useState<Page>("shop");
   const [category, setCategory] = useState("新品");
   const [searchOpen, setSearchOpen] = useState(false);
   const [search, setSearch] = useState("");
-  const [selectedProductId, setSelectedProductId] = useState(products[0].id);
+  const [selectedProductId, setSelectedProductId] = useState(initialProducts[0].id);
   const [cart, setCart] = useState<Record<string, number>>({ "bt-blind-dessert": 1 });
   const [favorites, setFavorites] = useState<string[]>([]);
   const [authOpen, setAuthOpen] = useState(false);
@@ -153,6 +362,8 @@ export default function Home() {
   const [coupon, setCoupon] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState("");
   const [toast, setToast] = useState("");
+  const [editingProductId, setEditingProductId] = useState<string | null>(null);
+  const [productDraft, setProductDraft] = useState<ProductDraft>(emptyProductDraft);
 
   const selectedProduct = products.find((product) => product.id === selectedProductId) ?? products[0];
   const categories = ["新品", "所有商品", "盲盒", "小賞", "一番賞", "吊飾", "公仔", "立牌"];
@@ -238,6 +449,167 @@ export default function Home() {
     setToast("折價券需輸入 BEAR100 且商品滿 999 元");
   }
 
+  function editProduct(product: Product) {
+    setEditingProductId(product.id);
+    setProductDraft(productToDraft(product));
+    setAdminTab("商品管理");
+    setToast(`正在編輯：${product.name}`);
+  }
+
+  function cancelProductEdit() {
+    setEditingProductId(null);
+    setProductDraft(emptyProductDraft);
+  }
+
+  function submitProduct(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const price = Number(productDraft.price);
+    const stock = Number(productDraft.stock);
+    if (!productDraft.name.trim() || !price || Number.isNaN(stock)) {
+      setToast("請填寫商品名稱、價格與庫存");
+      return;
+    }
+
+    if (editingProductId) {
+      setProducts((current) =>
+        current.map((product) =>
+          product.id === editingProductId
+            ? {
+                ...product,
+                name: productDraft.name.trim(),
+                category: productDraft.category,
+                price,
+                stock,
+                status: productDraft.status,
+                image: productDraft.image || undefined,
+                description: productDraft.description.trim() || product.description,
+                productInfo: productDraft.description.trim() || product.productInfo,
+              }
+            : product
+        )
+      );
+      setToast("商品已更新");
+    } else {
+      const newProduct: Product = {
+        id: `bt-custom-${Date.now()}`,
+        name: productDraft.name.trim(),
+        category: productDraft.category,
+        price,
+        stock,
+        sold: 0,
+        status: productDraft.status,
+        isNew: true,
+        color: "#f2a65a",
+        image: productDraft.image || undefined,
+        description: productDraft.description.trim() || "商品內容、預購期與注意事項待補。",
+        productInfo: productDraft.description.trim() || "商品資訊待補。",
+        shippingNote: productDraft.status === "預購" ? "預購商品依到貨順序出貨。" : "現貨商品付款完成後安排出貨。",
+      };
+      setProducts((current) => [newProduct, ...current]);
+      setToast("商品已新增到賣場");
+    }
+
+    setEditingProductId(null);
+    setProductDraft(emptyProductDraft);
+  }
+
+  function handleProductImageUpload(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setToast("請上傳圖片檔");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setProductDraft((draft) => ({ ...draft, image: String(reader.result) }));
+      setToast("商品圖片已加入預覽");
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function updateProductStatus(productId: string) {
+    const nextStatus: Record<ProductStatus, ProductStatus> = {
+      現貨: "預購",
+      預購: "完售",
+      完售: "現貨",
+    };
+    setProducts((current) =>
+      current.map((product) =>
+        product.id === productId ? { ...product, status: nextStatus[product.status] } : product
+      )
+    );
+  }
+
+  function cancelOrder(orderId: string) {
+    setOrders((current) =>
+      current.map((order) =>
+        order.id === orderId && order.status !== "已完成"
+          ? { ...order, status: "已取消" }
+          : order
+      )
+    );
+    setToast("訂單已取消");
+  }
+
+  function saveCoupon(draft: CouponDraft, editingId: string | null) {
+    const value = Number(draft.value);
+    const minOrder = Number(draft.minOrder);
+    if (!draft.code.trim() || !draft.title.trim() || !value || Number.isNaN(minOrder)) {
+      setToast("請填寫折價券代碼、名稱與折抵條件");
+      return false;
+    }
+
+    const nextCoupon: Coupon = {
+      id: editingId ?? `coupon-${Date.now()}`,
+      code: draft.code.trim().toUpperCase(),
+      title: draft.title.trim(),
+      type: draft.type,
+      value,
+      minOrder,
+      expiresAt: draft.expiresAt || "未設定",
+      status: draft.status,
+    };
+
+    setCoupons((current) =>
+      editingId
+        ? current.map((couponItem) => (couponItem.id === editingId ? nextCoupon : couponItem))
+        : [nextCoupon, ...current]
+    );
+    setToast(editingId ? "折價券已更新" : "折價券已新增");
+    return true;
+  }
+
+  function saveAnnouncement(draft: AnnouncementDraft, editingId: string | null) {
+    if (!draft.title.trim() || !draft.content.trim()) {
+      setToast("請填寫公告標題與內容");
+      return false;
+    }
+
+    const nextAnnouncement: Announcement = {
+      id: editingId ?? `announcement-${Date.now()}`,
+      title: draft.title.trim(),
+      content: draft.content.trim(),
+      status: draft.status,
+      updatedAt: new Date().toISOString().slice(0, 10),
+    };
+
+    setAnnouncements((current) =>
+      editingId
+        ? current.map((announcement) => (announcement.id === editingId ? nextAnnouncement : announcement))
+        : [nextAnnouncement, ...current]
+    );
+    setToast(editingId ? "公告已更新" : "公告已新增");
+    return true;
+  }
+
+  function updateMemberLevel(memberId: string, level: string) {
+    setMembers((current) =>
+      current.map((member) => (member.id === memberId ? { ...member, level } : member))
+    );
+    setToast("會員等級已更新");
+  }
+
   return (
     <main className="site-shell">
       <header className="topbar">
@@ -245,12 +617,6 @@ export default function Home() {
           熊賀勝新品補貨中，滿 $999 享 7-11 免運，Line Pay 結帳開放測試
         </div>
         <div className="header-main">
-          <button className="menu-toggle" type="button" aria-label="開啟選單" onClick={() => navigate("guide")}>
-            <span />
-            <span />
-            <span />
-          </button>
-
           <button className="brand" type="button" onClick={() => navigate("shop")} aria-label="熊賀勝首頁">
             <img src="/bear-toys-logo.png" alt="" />
             <span>
@@ -357,7 +723,11 @@ export default function Home() {
         <section className="page product-page">
           <button className="button ghost back-button" type="button" onClick={() => navigate("shop")}>返回商品列表</button>
           <div className="product-detail">
-            <div className="product-gallery" style={{ background: selectedProduct.color }}>
+            <div
+              className={`product-gallery ${selectedProduct.image ? "has-upload" : ""}`}
+              style={{ background: selectedProduct.image ? undefined : selectedProduct.color }}
+            >
+              {selectedProduct.image && <img src={selectedProduct.image} alt={selectedProduct.name} />}
               <span>{selectedProduct.status}</span>
               <strong>{selectedProduct.category}</strong>
             </div>
@@ -530,7 +900,13 @@ export default function Home() {
                   <button className={memberTab === tab ? "active" : ""} key={tab} type="button" onClick={() => setMemberTab(tab)}>{tab}</button>
                 ))}
               </nav>
-              <MemberPanel tab={memberTab} user={user} favorites={favorites} orders={demoOrders} />
+              <MemberPanel
+                tab={memberTab}
+                user={user}
+                favorites={favorites}
+                orders={orders}
+                onCancelOrder={cancelOrder}
+              />
             </>
           )}
         </section>
@@ -555,14 +931,99 @@ export default function Home() {
                 <Metric label="熱銷類型" value="小賞" />
               </div>
               <div className="admin-workspace">
-                <form className="admin-form">
-                  <SectionHeading compact title="新增商品" />
-                  <label>商品名稱<input placeholder="例：新款角色盲盒" /></label>
-                  <label>分類<select><option>盲盒</option><option>小賞</option><option>公仔</option><option>吊飾</option></select></label>
-                  <label>價格<input type="number" placeholder="390" /></label>
-                  <label>庫存<input type="number" placeholder="24" /></label>
-                  <label>商品描述<textarea rows={4} placeholder="商品內容、預購期、注意事項" /></label>
-                  <button className="button primary" type="button">新增到賣場</button>
+                <form className="admin-form" onSubmit={submitProduct}>
+                  <SectionHeading compact title={editingProductId ? "編輯商品" : "新增商品"} />
+                  {editingProductId && (
+                    <p className="form-hint">正在編輯商品。儲存後會同步更新前台商品列表。</p>
+                  )}
+                  <label>
+                    商品名稱
+                    <input
+                      value={productDraft.name}
+                      onChange={(event) => setProductDraft((draft) => ({ ...draft, name: event.target.value }))}
+                      placeholder="例：新款角色盲盒"
+                    />
+                  </label>
+                  <label>
+                    分類
+                    <select
+                      value={productDraft.category}
+                      onChange={(event) => setProductDraft((draft) => ({ ...draft, category: event.target.value }))}
+                    >
+                      <option>盲盒</option>
+                      <option>小賞</option>
+                      <option>一番賞</option>
+                      <option>公仔</option>
+                      <option>吊飾</option>
+                      <option>立牌</option>
+                    </select>
+                  </label>
+                  <label>
+                    商品狀態
+                    <select
+                      value={productDraft.status}
+                      onChange={(event) => setProductDraft((draft) => ({ ...draft, status: event.target.value as ProductStatus }))}
+                    >
+                      <option>現貨</option>
+                      <option>預購</option>
+                      <option>完售</option>
+                    </select>
+                  </label>
+                  <label>
+                    價格
+                    <input
+                      type="number"
+                      min="1"
+                      value={productDraft.price}
+                      onChange={(event) => setProductDraft((draft) => ({ ...draft, price: event.target.value }))}
+                      placeholder="390"
+                    />
+                  </label>
+                  <label>
+                    庫存
+                    <input
+                      type="number"
+                      min="0"
+                      value={productDraft.stock}
+                      onChange={(event) => setProductDraft((draft) => ({ ...draft, stock: event.target.value }))}
+                      placeholder="24"
+                    />
+                  </label>
+                  <label>
+                    商品描述
+                    <textarea
+                      rows={4}
+                      value={productDraft.description}
+                      onChange={(event) => setProductDraft((draft) => ({ ...draft, description: event.target.value }))}
+                      placeholder="商品內容、預購期、注意事項"
+                    />
+                  </label>
+                  <label>
+                    商品圖片
+                    <input type="file" accept="image/*" onChange={handleProductImageUpload} />
+                  </label>
+                  {productDraft.image && (
+                    <div className="image-preview">
+                      <img src={productDraft.image} alt="商品圖片預覽" />
+                      <button
+                        className="button ghost"
+                        type="button"
+                        onClick={() => setProductDraft((draft) => ({ ...draft, image: "" }))}
+                      >
+                        移除圖片
+                      </button>
+                    </div>
+                  )}
+                  <div className="form-actions">
+                    <button className="button primary" type="submit">
+                      {editingProductId ? "儲存商品" : "新增到賣場"}
+                    </button>
+                    {editingProductId && (
+                      <button className="button ghost" type="button" onClick={cancelProductEdit}>
+                        取消編輯
+                      </button>
+                    )}
+                  </div>
                 </form>
                 <section className="admin-side">
                   <nav className="admin-side-tabs">
@@ -570,7 +1031,19 @@ export default function Home() {
                       <button className={adminTab === tab ? "active" : ""} key={tab} type="button" onClick={() => setAdminTab(tab)}>{tab}</button>
                     ))}
                   </nav>
-                  <AdminPanel tab={adminTab} />
+                  <AdminPanel
+                    tab={adminTab}
+                    products={products}
+                    orders={orders}
+                    members={members}
+                    coupons={coupons}
+                    announcements={announcements}
+                    onEditProduct={editProduct}
+                    onCycleProductStatus={updateProductStatus}
+                    onSaveCoupon={saveCoupon}
+                    onSaveAnnouncement={saveAnnouncement}
+                    onUpdateMemberLevel={updateMemberLevel}
+                  />
                 </section>
               </div>
             </>
@@ -685,7 +1158,13 @@ function ProductGrid({ products, favorites, onFavorite, onAdd, onOpen }: { produ
     <div className="product-grid">
       {products.map((product) => (
         <article className="product-card" key={product.id}>
-          <button className="product-image" style={{ background: product.color }} type="button" onClick={() => onOpen(product.id)}>
+          <button
+            className={`product-image ${product.image ? "has-upload" : ""}`}
+            style={{ background: product.image ? undefined : product.color }}
+            type="button"
+            onClick={() => onOpen(product.id)}
+          >
+            {product.image && <img src={product.image} alt="" />}
             <span>{product.status}</span>
             <b>{product.category}</b>
           </button>
@@ -740,7 +1219,21 @@ function GuideContent({ tab }: { tab: string }) {
   return <div className="guide-prose"><p>{tab}內容會於正式上線前依商店政策補齊。</p></div>;
 }
 
-function MemberPanel({ tab, user, favorites, orders }: { tab: string; user: User; favorites: string[]; orders: typeof demoOrders }) {
+function MemberPanel({
+  tab,
+  user,
+  favorites,
+  orders,
+  onCancelOrder,
+}: {
+  tab: string;
+  user: User;
+  favorites: string[];
+  orders: Order[];
+  onCancelOrder: (orderId: string) => void;
+}) {
+  const [openOrderId, setOpenOrderId] = useState<string | null>(null);
+
   if (tab === "個人資料") {
     return (
       <div className="member-content-grid">
@@ -769,11 +1262,44 @@ function MemberPanel({ tab, user, favorites, orders }: { tab: string; user: User
       <section className="member-panel">
         <h2>訂單查詢/申請退貨</h2>
         {orders.map((order) => (
-          <div className="list-row" key={order.id}>
-            <span>{order.id} · {order.date}</span>
-            <strong>{currency.format(order.total)} / {order.status}</strong>
-            <button type="button">{order.action}</button>
-          </div>
+          <article className="order-card" key={order.id}>
+            <div className="list-row">
+              <span>{order.id} · {order.date}</span>
+              <strong>{currency.format(order.total)} / {order.status}</strong>
+              <div className="row-actions">
+                <button
+                  type="button"
+                  onClick={() => setOpenOrderId(openOrderId === order.id ? null : order.id)}
+                >
+                  {openOrderId === order.id ? "收合明細" : "查看明細"}
+                </button>
+                {order.status === "待出貨" || order.status === "待付款" ? (
+                  <button type="button" onClick={() => onCancelOrder(order.id)}>
+                    取消訂單
+                  </button>
+                ) : null}
+              </div>
+            </div>
+            {openOrderId === order.id && (
+              <div className="order-detail">
+                <dl>
+                  <div><dt>收件人</dt><dd>{order.receiver}</dd></div>
+                  <div><dt>手機</dt><dd>{order.phone}</dd></div>
+                  <div><dt>配送</dt><dd>{order.shipping}</dd></div>
+                  <div><dt>地址/門市</dt><dd>{order.address}</dd></div>
+                  <div><dt>付款</dt><dd>{order.payment}</dd></div>
+                </dl>
+                <div className="order-items">
+                  {order.items.map((item) => (
+                    <div key={`${order.id}-${item.productName}`}>
+                      <span>{item.productName}</span>
+                      <strong>{item.qty} x {currency.format(item.price)}</strong>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </article>
         ))}
       </section>
     );
@@ -788,26 +1314,264 @@ function Metric({ label, value }: { label: string; value: string }) {
   return <article className="metric"><span>{label}</span><strong>{value}</strong></article>;
 }
 
-function AdminPanel({ tab }: { tab: string }) {
-  const rows = tab === "商品管理"
-    ? products.map((product) => [product.name, `${product.stock} 件`, product.status])
-    : tab === "近期訂單"
-      ? demoOrders.map((order) => [order.id, currency.format(order.total), order.status])
-      : tab === "會員管理"
-        ? [["陳小熊", "金熊會員", "正常"], ["林美美", "銀熊會員", "正常"], ["王阿勝", "新會員", "需驗證"]]
-        : tab === "折價券"
-          ? [["BEAR100", "滿 999 折 100", "啟用中"]]
-          : [["跑馬燈公告", "滿 999 免運", "顯示中"]];
+function AdminPanel({
+  tab,
+  products,
+  orders,
+  members,
+  coupons,
+  announcements,
+  onEditProduct,
+  onCycleProductStatus,
+  onSaveCoupon,
+  onSaveAnnouncement,
+  onUpdateMemberLevel,
+}: {
+  tab: string;
+  products: Product[];
+  orders: Order[];
+  members: Member[];
+  coupons: Coupon[];
+  announcements: Announcement[];
+  onEditProduct: (product: Product) => void;
+  onCycleProductStatus: (productId: string) => void;
+  onSaveCoupon: (draft: CouponDraft, editingId: string | null) => boolean;
+  onSaveAnnouncement: (draft: AnnouncementDraft, editingId: string | null) => boolean;
+  onUpdateMemberLevel: (memberId: string, level: string) => void;
+}) {
+  const [openOrderId, setOpenOrderId] = useState<string | null>(null);
+  const [openMemberId, setOpenMemberId] = useState<string | null>(null);
+  const [editingCouponId, setEditingCouponId] = useState<string | null>(null);
+  const [couponDraft, setCouponDraft] = useState<CouponDraft>(emptyCouponDraft);
+  const [editingAnnouncementId, setEditingAnnouncementId] = useState<string | null>(null);
+  const [announcementDraft, setAnnouncementDraft] = useState<AnnouncementDraft>(emptyAnnouncementDraft);
+
+  if (tab === "商品管理") {
+    return (
+      <div className="admin-list">
+        <h2>商品管理</h2>
+        {products.map((product) => (
+          <div className="list-row admin-product-row" key={product.id}>
+            <span>{product.name}</span>
+            <strong>{product.stock} 件 / {product.status}</strong>
+            <div className="row-actions">
+              <button type="button" onClick={() => onEditProduct(product)}>
+                編輯
+              </button>
+              <button type="button" onClick={() => onCycleProductStatus(product.id)}>
+                切換狀態
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (tab === "近期訂單") {
+    return (
+      <div className="admin-list">
+        <h2>近期訂單</h2>
+        {orders.map((order) => (
+          <article className="order-card" key={order.id}>
+            <div className="list-row admin-order-row">
+              <span>{order.id} · {order.receiver}</span>
+              <strong>{currency.format(order.total)} / {order.status}</strong>
+              <button type="button" onClick={() => setOpenOrderId(openOrderId === order.id ? null : order.id)}>
+                {openOrderId === order.id ? "收合明細" : "查看明細"}
+              </button>
+            </div>
+            {openOrderId === order.id && (
+              <div className="order-detail">
+                <dl>
+                  <div><dt>訂單日期</dt><dd>{order.date}</dd></div>
+                  <div><dt>收件人</dt><dd>{order.receiver}</dd></div>
+                  <div><dt>手機</dt><dd>{order.phone}</dd></div>
+                  <div><dt>配送</dt><dd>{order.shipping}</dd></div>
+                  <div><dt>地址/門市</dt><dd>{order.address}</dd></div>
+                  <div><dt>付款方式</dt><dd>{order.payment}</dd></div>
+                </dl>
+                <div className="order-items">
+                  {order.items.map((item) => (
+                    <div key={`${order.id}-${item.productName}`}>
+                      <span>{item.productName}</span>
+                      <strong>{item.qty} x {currency.format(item.price)}</strong>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+    );
+  }
+
+  if (tab === "會員管理") {
+    return (
+      <div className="admin-list">
+        <h2>會員管理</h2>
+        {members.map((member) => (
+          <article className="order-card" key={member.id}>
+            <div className="list-row member-admin-row">
+              <span>{member.name} · {member.email}</span>
+              <select
+                className="inline-select"
+                value={member.level}
+                onChange={(event) => onUpdateMemberLevel(member.id, event.target.value)}
+              >
+                <option>新會員</option>
+                <option>銀熊會員</option>
+                <option>金熊會員</option>
+                <option>VIP</option>
+              </select>
+              <button type="button" onClick={() => setOpenMemberId(openMemberId === member.id ? null : member.id)}>
+                {openMemberId === member.id ? "收合資料" : "查看詳細"}
+              </button>
+            </div>
+            {openMemberId === member.id && (
+              <div className="member-detail">
+                <div><span>手機</span><strong>{member.phone}</strong></div>
+                <div><span>狀態</span><strong>{member.status}</strong></div>
+                <div><span>累計消費</span><strong>{currency.format(member.spent)}</strong></div>
+                <div><span>訂單數</span><strong>{member.orders} 筆</strong></div>
+                <div className="wide-field"><span>地址</span><strong>{member.address}</strong></div>
+                <div><span>加入日期</span><strong>{member.joinedAt}</strong></div>
+              </div>
+            )}
+          </article>
+        ))}
+      </div>
+    );
+  }
+
+  if (tab === "折價券") {
+    return (
+      <div className="admin-list">
+        <form
+          className="admin-mini-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (onSaveCoupon(couponDraft, editingCouponId)) {
+              setCouponDraft(emptyCouponDraft);
+              setEditingCouponId(null);
+            }
+          }}
+        >
+          <h2>{editingCouponId ? "編輯折價券" : "新增折價券"}</h2>
+          <div className="admin-form-grid">
+            <label>代碼<input value={couponDraft.code} onChange={(event) => setCouponDraft((draft) => ({ ...draft, code: event.target.value }))} placeholder="BEAR100" /></label>
+            <label>名稱<input value={couponDraft.title} onChange={(event) => setCouponDraft((draft) => ({ ...draft, title: event.target.value }))} placeholder="滿 999 折 100" /></label>
+            <label>
+              類型
+              <select value={couponDraft.type} onChange={(event) => setCouponDraft((draft) => ({ ...draft, type: event.target.value as CouponDraft["type"] }))}>
+                <option value="fixed">固定金額</option>
+                <option value="percent">百分比</option>
+              </select>
+            </label>
+            <label>折抵值<input type="number" min="1" value={couponDraft.value} onChange={(event) => setCouponDraft((draft) => ({ ...draft, value: event.target.value }))} placeholder="100" /></label>
+            <label>低消<input type="number" min="0" value={couponDraft.minOrder} onChange={(event) => setCouponDraft((draft) => ({ ...draft, minOrder: event.target.value }))} placeholder="999" /></label>
+            <label>到期日<input type="date" value={couponDraft.expiresAt} onChange={(event) => setCouponDraft((draft) => ({ ...draft, expiresAt: event.target.value }))} /></label>
+            <label>
+              狀態
+              <select value={couponDraft.status} onChange={(event) => setCouponDraft((draft) => ({ ...draft, status: event.target.value as CouponStatus }))}>
+                <option>啟用中</option>
+                <option>停用</option>
+              </select>
+            </label>
+          </div>
+          <div className="form-actions">
+            <button className="button primary" type="submit">{editingCouponId ? "儲存折價券" : "新增折價券"}</button>
+            {editingCouponId && (
+              <button className="button ghost" type="button" onClick={() => { setCouponDraft(emptyCouponDraft); setEditingCouponId(null); }}>
+                取消編輯
+              </button>
+            )}
+          </div>
+        </form>
+        {coupons.map((couponItem) => (
+          <div className="list-row admin-coupon-row" key={couponItem.id}>
+            <span>{couponItem.code} · {couponItem.title}</span>
+            <strong>{couponItem.type === "percent" ? `${couponItem.value}%` : currency.format(couponItem.value)} / 滿 {currency.format(couponItem.minOrder)}</strong>
+            <div className="row-actions">
+              <button type="button">{couponItem.status}</button>
+              <button type="button" onClick={() => { setCouponDraft(couponToDraft(couponItem)); setEditingCouponId(couponItem.id); }}>
+                編輯
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (tab === "公告") {
+    return (
+      <div className="admin-list">
+        <form
+          className="admin-mini-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            if (onSaveAnnouncement(announcementDraft, editingAnnouncementId)) {
+              setAnnouncementDraft(emptyAnnouncementDraft);
+              setEditingAnnouncementId(null);
+            }
+          }}
+        >
+          <h2>{editingAnnouncementId ? "編輯公告" : "新增公告"}</h2>
+          <div className="admin-form-grid">
+            <label>標題<input value={announcementDraft.title} onChange={(event) => setAnnouncementDraft((draft) => ({ ...draft, title: event.target.value }))} placeholder="跑馬燈公告" /></label>
+            <label>
+              狀態
+              <select value={announcementDraft.status} onChange={(event) => setAnnouncementDraft((draft) => ({ ...draft, status: event.target.value as AnnouncementStatus }))}>
+                <option>顯示中</option>
+                <option>隱藏</option>
+              </select>
+            </label>
+            <label className="wide-field">
+              內容
+              <textarea rows={3} value={announcementDraft.content} onChange={(event) => setAnnouncementDraft((draft) => ({ ...draft, content: event.target.value }))} placeholder="滿 999 享 7-11 免運" />
+            </label>
+          </div>
+          <div className="form-actions">
+            <button className="button primary" type="submit">{editingAnnouncementId ? "儲存公告" : "新增公告"}</button>
+            {editingAnnouncementId && (
+              <button className="button ghost" type="button" onClick={() => { setAnnouncementDraft(emptyAnnouncementDraft); setEditingAnnouncementId(null); }}>
+                取消編輯
+              </button>
+            )}
+          </div>
+        </form>
+        {announcements.map((announcement) => (
+          <div className="list-row announcement-row" key={announcement.id}>
+            <span>{announcement.title} · {announcement.content}</span>
+            <strong>{announcement.updatedAt}</strong>
+            <div className="row-actions">
+              <button type="button">{announcement.status}</button>
+              <button
+                type="button"
+                onClick={() => {
+                  setAnnouncementDraft({
+                    title: announcement.title,
+                    content: announcement.content,
+                    status: announcement.status,
+                  });
+                  setEditingAnnouncementId(announcement.id);
+                }}
+              >
+                編輯
+              </button>
+            </div>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
   return (
     <div className="admin-list">
       <h2>{tab}</h2>
-      {rows.map((row) => (
-        <div className="list-row" key={row.join("-")}>
-          <span>{row[0]}</span>
-          <strong>{row[1]}</strong>
-          <button type="button">{row[2]}</button>
-        </div>
-      ))}
+      <p>目前無可用資料。</p>
     </div>
   );
 }

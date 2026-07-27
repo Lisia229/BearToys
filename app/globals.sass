@@ -1,0 +1,875 @@
+@import url("tailwindcss")
+:root
+  --ink: #351b13
+  --muted: #7a6258
+  --paper: #fff8ef
+  --panel: #ffffff
+  --line: #ead5c4
+  --brand: #f28a00
+  --brand-dark: #5a2c12
+  --red: #9b2b1d
+  --mint: #dbead8
+  --sky: #d9edf5
+  --blue: #2f6fd6
+  --shadow: 0 18px 46px rgba(93, 43, 18, 0.14)
+@theme inline
+  --color-background: var(--paper)
+  --color-foreground: var(--ink)
+  --font-sans: var(--font-noto-sans-tc)
+  --font-mono: var(--font-montserrat)
+*
+  box-sizing: border-box
+html
+  scroll-behavior: smooth
+body
+  margin: 0
+  overflow-x: hidden
+  background:     linear-gradient(90deg, rgba(90, 44, 18, 0.06) 1px, transparent 1px),     linear-gradient(180deg, rgba(90, 44, 18, 0.06) 1px, transparent 1px),     var(--paper)
+  background-size: 32px 32px
+  color: var(--ink)
+  font-family: var(--font-noto-sans-tc), "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif
+button, input, select, textarea
+  font: inherit
+button
+  cursor: pointer
+a, button
+  color: inherit
+  text-decoration: none
+  touch-action: manipulation
+img
+  max-width: 100%
+.site-shell
+  min-height: 100vh
+.topbar
+  position: sticky
+  top: 0
+  z-index: 50
+  background: rgba(255, 255, 255, 0.96)
+  border-bottom: 1px solid rgba(53, 27, 19, 0.12)
+  backdrop-filter: blur(14px)
+.promo-bar
+  min-height: 34px
+  padding: 7px 16px
+  overflow: hidden
+  background: rgba(219, 234, 216, 0.76)
+  color: var(--red)
+  text-align: center
+  font-size: 0.84rem
+  font-weight: 800
+.header-main
+  display: grid
+  grid-template-columns: 120px minmax(240px, 1fr) auto
+  align-items: center
+  gap: 12px
+  padding: 6px clamp(14px, 4vw, 58px)
+.brand
+  display: flex
+  justify-content: center
+  align-items: center
+  gap: 12px
+  min-width: 0
+  border: 0
+  background: transparent
+.brand span
+  display: grid
+  min-width: 0
+.brand img
+  width: 74px
+  height: 74px
+  border-radius: 50%
+  object-fit: cover
+  border: 3px solid #fff
+  box-shadow: 0 6px 18px rgba(90, 44, 18, 0.2)
+.brand strong
+  display: block
+  color: var(--brand-dark)
+  font-size: clamp(1.85rem, 4vw, 4rem)
+  line-height: 0.92
+  white-space: nowrap
+.brand small
+  color: var(--muted)
+  font-weight: 900
+  white-space: nowrap
+.brand small, .icon-button, .cart-pill, .category-tabs button, .eyebrow, .section-heading h2, .product-meta strong, .detail-price, .metric strong, .site-footer h2, .auth-tabs button
+  font-family: var(--font-montserrat), var(--font-noto-sans-tc), sans-serif
+.menu-toggle, .icon-button, .cart-pill, .category-tabs button, .button, .product-actions button, .detail-actions button, .search-chips button, .member-menu button, .guide-sidebar button, .member-tabs button, .admin-side-tabs button, .list-row button, .dialog-close, .auth-tabs button, .auth-submit, .auth-demo, .site-footer button, .newsletter-form button, .cart-item button
+  border: 1px solid var(--line)
+  border-radius: 999px
+  background: #fff
+  color: var(--ink)
+  font-weight: 900
+.menu-toggle
+  display: grid
+  width: 46px
+  height: 46px
+  padding: 0
+  place-items: center
+.menu-toggle span
+  display: block
+  width: 20px
+  height: 2px
+  margin: 2px 0
+  border-radius: 999px
+  background: var(--red)
+.user-actions
+  display: flex
+  align-items: center
+  justify-content: flex-end
+  gap: 9px
+  white-space: nowrap
+.icon-button, .cart-pill
+  min-height: 42px
+  padding: 0 13px
+.cart-pill strong
+  display: inline-flex
+  min-width: 26px
+  min-height: 26px
+  align-items: center
+  justify-content: center
+  margin-left: 4px
+  border-radius: 50%
+  color: #fff
+  background: var(--red)
+.category-tabs
+  display: flex
+  gap: 8px
+  padding: 9px clamp(14px, 4vw, 58px) 14px
+  overflow-x: auto
+  border-top: 1px solid rgba(53, 27, 19, 0.08)
+.category-tabs button
+  flex: none
+  min-height: 38px
+  padding: 0 16px
+.category-tabs .active, .category-tabs .highlight, .guide-sidebar .active, .member-tabs .active, .admin-side-tabs .active, .auth-tabs .active
+  border-color: var(--brand)
+  color: var(--red)
+  background: #fff1df
+.search-panel, .member-menu
+  position: absolute
+  right: clamp(14px, 4vw, 58px)
+  z-index: 60
+  display: grid
+  gap: 14px
+  width: min(520px, calc(100vw - 28px))
+  padding: 18px
+  background: #fff
+  border: 1px solid var(--line)
+  border-radius: 8px
+  box-shadow: var(--shadow)
+.search-panel
+  top: 92px
+.member-menu
+  top: 94px
+  width: min(300px, calc(100vw - 28px))
+.member-menu button
+  min-height: 40px
+  text-align: left
+  border-radius: 8px
+  padding: 0 12px
+.search-close, .dialog-close
+  position: absolute
+  top: 10px
+  right: 10px
+  width: 34px
+  height: 34px
+.search-close::before, .search-close::after
+  position: absolute
+  inset: 15px 8px auto
+  height: 2px
+  content: ""
+  background: var(--red)
+.search-close::before
+  transform: rotate(45deg)
+.search-close::after
+  transform: rotate(-45deg)
+.search-field
+  display: grid
+  grid-template-columns: auto 1fr
+  gap: 14px
+  align-items: center
+  min-height: 52px
+  padding: 0 18px
+  border: 2px solid var(--brand)
+  border-radius: 999px
+.search-field span
+  color: var(--red)
+  font-weight: 950
+.search-field input, .coupon-row input, .checkout-form input, .checkout-form select, .auth-panel input, .admin-form input, .admin-form select, .admin-form textarea, .admin-mini-form input, .admin-mini-form select, .admin-mini-form textarea, .member-form-grid input, .newsletter-form input, .inline-select
+  width: 100%
+  min-width: 0
+  border: 1px solid var(--line)
+  border-radius: 8px
+  background: #fff
+  color: var(--ink)
+  outline: none
+.search-field input
+  border: 0
+.search-chips
+  display: flex
+  flex-wrap: wrap
+  gap: 8px
+.search-chips button
+  min-height: 34px
+  padding: 0 12px
+.page
+  min-height: 56vh
+  padding-bottom: 44px
+.page-narrow, .member-page
+  max-width: 1160px
+  margin: 0 auto
+  padding-inline: clamp(16px, 4vw, 32px)
+.shop-hero
+  display: grid
+  grid-template-columns: minmax(0, 1fr) 320px
+  gap: 22px
+  padding: clamp(30px, 7vw, 82px) clamp(16px, 5vw, 70px)
+  background:     linear-gradient(90deg, rgba(255, 255, 255, 0.93), rgba(255, 247, 235, 0.72)),     url("/og.png") center / cover
+  border-bottom: 1px solid var(--line)
+.shop-hero h1, .page-title h1, .product-info h1, .locked-panel h1, .member-header h1
+  margin: 0
+  letter-spacing: 0
+.shop-hero h1
+  max-width: 760px
+  font-size: clamp(2.3rem, 6vw, 5.8rem)
+  line-height: 0.98
+.shop-hero p
+  max-width: 680px
+  color: var(--muted)
+  font-weight: 800
+  line-height: 1.8
+.shop-card, .product-card, .summary-section, .checkout-form, .guide-panel, .member-panel, .locked-panel, .admin-form, .admin-side, .story-panel, .auth-dialog
+  background: rgba(255, 255, 255, 0.97)
+  border: 1px solid var(--line)
+  border-radius: 8px
+  box-shadow: var(--shadow)
+.shop-card
+  align-self: end
+  display: grid
+  gap: 12px
+  padding: 18px
+.shop-card strong
+  font-size: 1.25rem
+.shop-card span, .shop-card button
+  color: var(--muted)
+.shop-card button
+  min-height: 42px
+  border-radius: 8px
+  border: 1px solid var(--brand)
+  background: #fff7ec
+  color: var(--red)
+  font-weight: 950
+.eyebrow
+  margin: 0 0 7px
+  color: var(--red)
+  font-size: 0.82rem
+  font-weight: 950
+  letter-spacing: 0
+  text-transform: uppercase
+.section-heading
+  display: flex
+  justify-content: space-between
+  align-items: end
+  gap: 18px
+  padding: 40px clamp(16px, 5vw, 70px) 18px
+.section-heading.compact
+  padding: 0 0 16px
+.section-heading h2
+  margin: 0
+  font-size: clamp(1.35rem, 3vw, 2.2rem)
+.section-heading span, .page-title p
+  color: var(--muted)
+  font-weight: 800
+.product-grid
+  display: grid
+  grid-template-columns: repeat(5, minmax(170px, 1fr))
+  gap: 16px
+  padding: 0 clamp(16px, 5vw, 70px) 24px
+.product-card
+  overflow: hidden
+.product-image
+  position: relative
+  display: block
+  width: 100%
+  min-height: 215px
+  overflow: hidden
+  border: 0
+  border-radius: 0
+.product-image img
+  position: absolute
+  inset: 0
+  z-index: 1
+  width: 100%
+  height: 100%
+  object-fit: cover
+.product-image.has-upload::after
+  display: none
+.product-image::after
+  position: absolute
+  inset: 46px 34px 34px
+  content: ""
+  border-radius: 24px
+  background:     radial-gradient(circle at 50% 40%, rgba(255, 255, 255, 0.9) 0 18%, transparent 19%),     radial-gradient(circle at 38% 32%, rgba(90, 44, 18, 0.7) 0 6%, transparent 7%),     radial-gradient(circle at 62% 32%, rgba(90, 44, 18, 0.7) 0 6%, transparent 7%),     rgba(255, 255, 255, 0.24)
+  border: 2px solid rgba(255, 255, 255, 0.56)
+.product-image span, .product-image b
+  position: absolute
+  z-index: 2
+  top: 10px
+  display: inline-flex
+  min-height: 28px
+  align-items: center
+  padding: 0 10px
+  border-radius: 6px
+  color: #fff
+  font-size: 0.82rem
+.product-image span
+  left: 10px
+  background: var(--red)
+.product-image b
+  right: 10px
+  background: var(--blue)
+.product-body
+  display: grid
+  gap: 9px
+  padding: 13px
+.product-body p
+  margin: 0
+  color: var(--red)
+  font-weight: 950
+  font-size: 0.82rem
+.product-body h3
+  height: 48px
+  margin: 0
+  overflow: hidden
+  font-size: 0.96rem
+  line-height: 1.5
+.product-meta, .product-actions, .detail-actions, .stock-row, .coupon-row, .social-login, .member-header, .admin-side-tabs
+  display: flex
+  gap: 10px
+  align-items: center
+.product-meta
+  justify-content: space-between
+.product-meta strong, .detail-price, .grand-total dd
+  color: var(--red)
+.product-meta span
+  color: var(--muted)
+  font-size: 0.82rem
+.product-actions
+  display: grid
+  grid-template-columns: 82px 1fr
+.product-actions button, .detail-actions button
+  min-height: 40px
+  padding: 0 12px
+  border-radius: 8px
+.product-actions button:last-child, .button.primary, .auth-submit
+  border-color: var(--brand)
+  background: var(--brand)
+  color: #fff
+.button
+  display: inline-flex
+  min-height: 42px
+  align-items: center
+  justify-content: center
+  padding: 0 16px
+.button.secondary
+  border-color: var(--brand)
+  color: var(--red)
+  background: #fff7ec
+.button.ghost
+  background: transparent
+.product-page
+  padding: 28px clamp(16px, 5vw, 70px) 52px
+.back-button
+  margin-bottom: 16px
+.product-detail
+  display: grid
+  grid-template-columns: minmax(300px, 0.85fr) minmax(0, 1.15fr)
+  gap: 24px
+  margin-bottom: 18px
+.product-gallery
+  position: relative
+  overflow: hidden
+  min-height: 520px
+  border-radius: 8px
+.product-gallery img
+  position: absolute
+  inset: 0
+  z-index: 1
+  width: 100%
+  height: 100%
+  object-fit: cover
+.product-gallery.has-upload::after
+  display: none
+.product-gallery::after
+  position: absolute
+  inset: 90px
+  content: ""
+  border-radius: 40px
+  background:     radial-gradient(circle at 50% 42%, #fff 0 16%, transparent 17%),     radial-gradient(circle at 38% 35%, var(--brand-dark) 0 5%, transparent 6%),     radial-gradient(circle at 62% 35%, var(--brand-dark) 0 5%, transparent 6%),     rgba(255, 255, 255, 0.3)
+.product-gallery span, .product-gallery strong
+  position: absolute
+  top: 16px
+  z-index: 2
+  padding: 7px 12px
+  border-radius: 8px
+  color: #fff
+.product-gallery span
+  left: 16px
+  background: var(--red)
+.product-gallery strong
+  right: 16px
+  background: var(--blue)
+.product-info
+  display: grid
+  align-content: start
+  gap: 16px
+  padding: 26px
+  background: #fff
+  border-radius: 8px
+  border: 1px solid var(--line)
+.product-info h1
+  font-size: clamp(2rem, 4vw, 4rem)
+  line-height: 1
+.product-info p, .product-info details
+  color: var(--muted)
+  line-height: 1.75
+.detail-price
+  font-size: 2rem
+.stock-row
+  flex-wrap: wrap
+.stock-row span
+  min-height: 34px
+  padding: 7px 10px
+  border: 1px solid var(--line)
+  border-radius: 8px
+  background: #fff9f3
+  font-weight: 900
+.page-title
+  padding: 48px 0 24px
+.page-title h1
+  font-size: clamp(2rem, 5vw, 4rem)
+.collection-list, .list, .admin-list, .guide-content, .member-panel
+  display: grid
+  gap: 12px
+.list-row, .cart-item, .totals div
+  display: grid
+  grid-template-columns: minmax(0, 1fr) auto auto
+  gap: 12px
+  align-items: center
+  min-height: 50px
+  padding: 12px
+  border: 1px solid var(--line)
+  border-radius: 8px
+  background: #fffdf9
+.list-row span, .cart-item span
+  min-width: 0
+  overflow: hidden
+  text-overflow: ellipsis
+  white-space: nowrap
+.list-row button
+  min-height: 36px
+  padding: 0 12px
+  border-radius: 8px
+  color: var(--red)
+.row-actions, .form-actions
+  display: flex
+  flex-wrap: wrap
+  gap: 8px
+  justify-content: flex-end
+.row-actions button
+  white-space: nowrap
+.form-actions
+  justify-content: stretch
+.form-actions .button
+  flex: 1 1 150px
+.form-hint
+  margin: 0
+  padding: 10px 12px
+  border: 1px solid #ffd097
+  border-radius: 8px
+  color: var(--red)
+  background: #fff7ec
+  font-weight: 900
+.empty-state
+  display: grid
+  place-items: center
+  gap: 12px
+  min-height: 180px
+  color: var(--muted)
+.checkout-layout
+  display: grid
+  grid-template-columns: minmax(0, 1fr) minmax(320px, 0.82fr)
+  gap: 22px
+  align-items: start
+.summary-section, .checkout-form, .member-panel, .locked-panel, .admin-form, .admin-side
+  padding: 20px
+.cart-item div
+  display: inline-flex
+  align-items: center
+  gap: 8px
+.cart-item button
+  width: 30px
+  height: 30px
+.coupon-row
+  margin-top: 14px
+.coupon-row input, .checkout-form input, .checkout-form select, .auth-panel input, .admin-form input, .admin-form select, .admin-form textarea, .admin-mini-form input, .admin-mini-form select, .admin-mini-form textarea, .member-form-grid input, .newsletter-form input, .inline-select
+  min-height: 42px
+  padding: 0 12px
+.admin-form input[type="file"]
+  padding: 9px 12px
+.totals
+  display: grid
+  gap: 8px
+  margin: 14px 0 0
+.totals div
+  grid-template-columns: minmax(0, 1fr) auto
+.totals dt, .totals dd
+  margin: 0
+.grand-total
+  background: #fff1df !important
+  border-color: #ffd097 !important
+.grand-total dd
+  font-size: 1.35rem
+  font-weight: 950
+.checkout-form
+  display: grid
+  gap: 12px
+.checkout-form label, .admin-form label, .admin-mini-form label, .member-form-grid label
+  display: grid
+  gap: 6px
+  color: var(--muted)
+  font-weight: 900
+.payment-choice
+  padding: 14px
+  border: 1px solid #bfe8e4
+  border-radius: 8px
+  background: #f2fffc
+.payment-choice span
+  color: var(--muted)
+  font-weight: 900
+.payment-choice strong
+  display: block
+  margin: 5px 0
+  color: #0b948b
+  font-size: 1.35rem
+.payment-choice p
+  margin: 0
+  color: var(--muted)
+.guide-panel
+  display: grid
+  grid-template-columns: 230px minmax(0, 1fr)
+  overflow: hidden
+.guide-sidebar
+  display: grid
+  align-content: start
+  gap: 4px
+  padding: 20px
+  background: #fff1df
+  border-right: 1px solid var(--line)
+.guide-sidebar h2
+  margin: 0 0 12px
+  font-size: 0.95rem
+.guide-sidebar button
+  min-height: 40px
+  padding: 0 10px
+  text-align: left
+  border-radius: 8px
+.guide-content
+  padding: 22px
+.guide-accordion details, .guide-prose
+  padding: 14px
+  border: 1px solid var(--line)
+  border-radius: 8px
+  background: #fffdf9
+.guide-accordion summary
+  font-weight: 950
+.guide-accordion p, .guide-accordion li, .guide-prose p
+  color: var(--muted)
+  line-height: 1.75
+.story-panel
+  display: grid
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr)
+  gap: 24px
+  padding: 18px
+.story-panel img
+  border-radius: 8px
+.story-panel p
+  color: var(--muted)
+  line-height: 1.8
+.locked-panel
+  display: grid
+  place-items: center
+  gap: 12px
+  max-width: 720px
+  min-height: 320px
+  margin: 58px auto
+  text-align: center
+.member-header
+  justify-content: space-between
+  padding: 44px 0 16px
+.member-tabs, .admin-side-tabs
+  display: flex
+  flex-wrap: wrap
+  gap: 8px
+  margin-bottom: 16px
+.member-tabs button, .admin-side-tabs button
+  min-height: 40px
+  padding: 0 12px
+.member-content-grid
+  display: grid
+  grid-template-columns: minmax(0, 1.1fr) minmax(300px, 0.9fr)
+  gap: 18px
+.order-card
+  display: grid
+  gap: 10px
+.order-detail
+  display: grid
+  gap: 12px
+  padding: 14px
+  border: 1px solid var(--line)
+  border-radius: 8px
+  background: #fff7ec
+.order-detail dl, .order-items
+  display: grid
+  gap: 8px
+  margin: 0
+.order-detail dl div, .order-items div
+  display: grid
+  grid-template-columns: 110px minmax(0, 1fr)
+  gap: 10px
+  align-items: start
+.order-detail dt, .order-detail dd
+  margin: 0
+.order-detail dt
+  color: var(--muted)
+  font-weight: 900
+.order-items
+  padding-top: 10px
+  border-top: 1px solid var(--line)
+.member-detail
+  display: grid
+  grid-template-columns: repeat(2, minmax(0, 1fr))
+  gap: 10px
+  padding: 14px
+  border: 1px solid var(--line)
+  border-radius: 8px
+  background: #fff7ec
+.member-detail div
+  display: grid
+  gap: 4px
+  min-width: 0
+.member-detail span
+  color: var(--muted)
+  font-size: 0.84rem
+  font-weight: 900
+.member-detail strong
+  overflow-wrap: anywhere
+.member-form-grid
+  display: grid
+  grid-template-columns: repeat(2, minmax(0, 1fr))
+  gap: 12px
+.wide-field
+  grid-column: 1 / -1
+.admin-grid
+  display: grid
+  grid-template-columns: repeat(4, minmax(160px, 1fr))
+  gap: 14px
+  padding: 0 clamp(16px, 5vw, 70px) 20px
+.metric
+  display: grid
+  gap: 8px
+  padding: 18px
+  border: 1px solid var(--line)
+  border-radius: 8px
+  background: #fff
+  box-shadow: var(--shadow)
+.metric span
+  color: var(--muted)
+  font-weight: 900
+.metric strong
+  font-size: 1.75rem
+.admin-workspace
+  display: grid
+  grid-template-columns: minmax(320px, 0.85fr) minmax(0, 1.15fr)
+  gap: 20px
+  padding: 0 clamp(16px, 5vw, 70px) 40px
+.admin-form
+  display: grid
+  gap: 12px
+.admin-mini-form
+  display: grid
+  gap: 12px
+  padding: 14px
+  border: 1px solid var(--line)
+  border-radius: 8px
+  background: #fffdf9
+.admin-mini-form h2
+  margin: 0
+.admin-form-grid
+  display: grid
+  grid-template-columns: repeat(2, minmax(0, 1fr))
+  gap: 12px
+.image-preview
+  display: grid
+  gap: 10px
+  padding: 10px
+  border: 1px solid var(--line)
+  border-radius: 8px
+  background: #fffdf9
+.image-preview img
+  width: 100%
+  aspect-ratio: 4 / 3
+  border-radius: 8px
+  object-fit: cover
+.inline-select
+  width: min(160px, 100%)
+.admin-order-row,
+.admin-coupon-row,
+.announcement-row,
+.member-admin-row
+  grid-template-columns: minmax(0, 1fr) auto auto
+.admin-product-row
+  grid-template-columns: minmax(0, 1fr) auto minmax(180px, auto)
+.admin-side-tabs
+  margin: 0 0 14px
+.dialog-backdrop
+  position: fixed
+  inset: 0
+  z-index: 100
+  display: grid
+  place-items: center
+  padding: 18px
+  background: rgba(53, 27, 19, 0.45)
+.auth-dialog
+  position: relative
+  width: min(560px, 100%)
+  padding: 35px 24px 24px
+.dialog-close
+  font-size: 1.35rem
+.auth-tabs
+  display: grid
+  grid-template-columns: 1fr 1fr
+  gap: 8px
+  margin-bottom: 18px
+.auth-tabs button, .auth-submit, .auth-demo
+  min-height: 42px
+.auth-panel
+  display: grid
+  gap: 12px
+.social-login
+  display: grid
+  grid-template-columns: 1fr 1fr
+.social-login.facebook-only
+  grid-template-columns: 1fr
+.social-login button
+  min-height: 44px
+  border-radius: 8px
+  border: 0
+  color: #fff
+  background: #1877f2
+  font-weight: 950
+.auth-demo
+  color: var(--red)
+  background: #fff7ec
+.site-footer
+  display: grid
+  grid-template-columns: repeat(4, minmax(160px, 1fr))
+  gap: 24px
+  padding: 34px clamp(16px, 5vw, 70px)
+  color: #fff7ec
+  background: #2b1a14
+.site-footer section
+  display: grid
+  align-content: start
+  gap: 9px
+.site-footer h2
+  margin: 0 0 4px
+  color: #ffc178
+  font-size: 0.92rem
+.site-footer button, .site-footer a, .site-footer p
+  margin: 0
+  padding: 0
+  border: 0
+  background: transparent
+  color: inherit
+  text-align: left
+  font-weight: 700
+.newsletter-form
+  display: grid
+  grid-template-columns: 1fr 42px
+  gap: 8px
+.newsletter-form button
+  color: #fff
+  background: var(--brand)
+.toast
+  position: fixed
+  right: 18px
+  bottom: 18px
+  z-index: 120
+  max-width: min(360px, calc(100vw - 36px))
+  min-height: 46px
+  padding: 0 16px
+  color: #fff
+  background: var(--brand-dark)
+  border: 0
+  border-radius: 8px
+  box-shadow: var(--shadow)
+  font-weight: 900
+@media (max-width: 1180px)
+  .product-grid
+    grid-template-columns: repeat(3, minmax(180px, 1fr))
+  .admin-grid
+    grid-template-columns: repeat(2, minmax(160px, 1fr))
+@media (max-width: 880px)
+  .header-main
+    grid-template-columns: 52px minmax(0, 1fr)
+  .shop-hero,
+  .product-detail,
+  .checkout-layout,
+  .guide-panel,
+  .story-panel,
+  .member-content-grid,
+  .admin-workspace,
+  .site-footer
+    grid-template-columns: 1fr
+  .brand
+    justify-content: center
+    gap: 10px
+  .brand img
+    width: 58px
+    height: 58px
+  .brand strong
+    font-size: clamp(1.8rem, 8vw, 3rem)
+  .brand small
+    font-size: 0.88rem
+  .user-actions
+    grid-column: 1 / -1
+    justify-content: start
+    overflow-x: auto
+  .product-gallery
+    min-height: 360px
+  .guide-sidebar
+    border-right: 0
+    border-bottom: 1px solid var(--line)
+@media (max-width: 640px)
+  .product-grid,
+  .admin-grid,
+  .member-form-grid,
+  .admin-form-grid,
+  .member-detail
+    grid-template-columns: 1fr
+  .section-heading,
+  .member-header
+    align-items: start
+    flex-direction: column
+  .list-row,
+  .cart-item,
+  .admin-product-row,
+  .admin-order-row,
+  .admin-coupon-row,
+  .announcement-row,
+  .member-admin-row
+    grid-template-columns: 1fr
+  .social-login
+    grid-template-columns: 1fr
+  .inline-select
+    width: 100%
