@@ -383,7 +383,7 @@ export default function Home() {
         .includes(keyword);
       return matchesCategory && matchesSearch;
     });
-  }, [category, search]);
+  }, [category, products, search]);
 
   const cartRows = Object.entries(cart)
     .map(([id, qty]) => {
@@ -711,19 +711,54 @@ export default function Home() {
 
       {page === "shop" && (
         <section className="page active">
-          <div className="shop-hero">
-            <div>
-              <p className="eyebrow">Bear Toys Select</p>
-              <h1>盲盒、小賞、預購商品一次逛</h1>
-              <p>流程參考 7tiger：先逛商品、收藏喜歡款式，再進購物車完成 Line Pay 與 7-11 / 宅配配送資料。</p>
+          <div className="shop-hero-wrap">
+            <div className="shop-hero">
+              <div className="hero-visual">
+                <img src="/og.png" alt="熊賀勝本週精選玩具" />
+                <span className="hero-badge">本週精選</span>
+              </div>
+              <div className="hero-copy">
+                <p className="eyebrow">BEAR TOYS PICK</p>
+                <h1>把喜歡的角色<br />帶回收藏櫃</h1>
+                <p>盲盒、小賞、日版預購一次逛。現貨快速出貨，也能選擇 7-11 取貨或宅配。</p>
+                <div className="hero-feature">
+                  <span>人氣推薦</span>
+                  <strong>熊賀勝限定幸運小賞組</strong>
+                </div>
+                <div className="hero-cta-row">
+                  <button className="button primary" type="button" onClick={() => setCategory("小賞")}>立即選購</button>
+                  <button className="button hero-secondary" type="button" onClick={() => navigate("guide")}>購買須知</button>
+                </div>
+              </div>
             </div>
-            <div className="shop-card">
-              <strong>高雄門市</strong>
-              <span>807 高雄市三民區本安里信國路 32 號</span>
-              <button type="button" onClick={() => navigate("guide")}>購買須知</button>
-            </div>
+            <aside className="shop-quick-panel" aria-label="購物快捷功能">
+              <p className="eyebrow">TODAY AT BEAR TOYS</p>
+              <h2>今天想找什麼？</h2>
+              <div className="quick-grid">
+                <button type="button" onClick={() => setCategory("新品")}><b>NEW</b><span>新品到貨</span></button>
+                <button type="button" onClick={() => setCategory("小賞")}><b>LUCKY</b><span>熱門小賞</span></button>
+                <button type="button" onClick={() => navigate("favorites")}><b>LOVE</b><span>我的收藏</span></button>
+                <button type="button" onClick={() => navigate("member")}><b>MEMBER</b><span>訂單查詢</span></button>
+              </div>
+              <button className="store-link" type="button" onClick={() => navigate("about")}>
+                <span>高雄實體門市</span>
+                <strong>信國路 32 號 →</strong>
+              </button>
+            </aside>
           </div>
-          <SectionHeading eyebrow={category} title={category === "新品" ? "NEWS" : category} note={`${filteredProducts.length} 件商品`} />
+          <div className="trust-strip">
+            <span><b>01</b> 精選正版玩具</span>
+            <span><b>02</b> 現貨快速出貨</span>
+            <span><b>03</b> 7-11／宅配</span>
+            <span><b>04</b> 會員訂單追蹤</span>
+          </div>
+          <div className="shop-section-head">
+            <div>
+              <p className="eyebrow">EXPLORE THE COLLECTION</p>
+              <h2>{category === "新品" ? "最新上架" : category}</h2>
+            </div>
+            <span>共 {filteredProducts.length} 件商品</span>
+          </div>
           <ProductGrid
             products={filteredProducts}
             favorites={favorites}
@@ -1095,6 +1130,14 @@ export default function Home() {
         </section>
       </footer>
 
+      <nav className="dock-nav" aria-label="快速導覽">
+        <button className={page === "shop" ? "active" : ""} type="button" onClick={() => navigate("shop")}><span>首頁</span></button>
+        <button type="button" onClick={() => { setCategory("小賞"); navigate("shop"); }}><span>小賞</span></button>
+        <button className={page === "favorites" ? "active" : ""} type="button" onClick={() => navigate("favorites")}><span>收藏</span></button>
+        <button className={page === "member" ? "active" : ""} type="button" onClick={() => navigate("member")}><span>我的</span></button>
+        <button className="dock-cart" type="button" onClick={() => navigate("checkout")}><span>購物車</span><b>{cartRows.reduce((sum, row) => sum + row.qty, 0)}</b></button>
+      </nav>
+
       {authOpen && (
         <div className="dialog-backdrop" role="presentation">
           <section className="auth-dialog" role="dialog" aria-modal="true" aria-label="會員登入與註冊">
@@ -1183,6 +1226,10 @@ function ProductGrid({ products, favorites, onFavorite, onAdd, onOpen }: { produ
             {product.image && <img src={product.image} alt="" />}
             <span>{product.status}</span>
             <b>{product.category}</b>
+            <div className="prize-callout">
+              <small>庫存速報</small>
+              <strong>熱門款・剩 {product.stock}</strong>
+            </div>
           </button>
           <div className="product-body">
             <p>{product.category}</p>
@@ -1190,6 +1237,9 @@ function ProductGrid({ products, favorites, onFavorite, onAdd, onOpen }: { produ
             <div className="product-meta">
               <strong>{currency.format(product.price)}</strong>
               <span>已售 {product.sold}</span>
+            </div>
+            <div className="stock-progress" aria-label={`剩餘庫存 ${product.stock}`}>
+              <i style={{ width: `${Math.max(12, Math.min(100, (product.stock / (product.stock + product.sold)) * 100))}%` }} />
             </div>
             <div className="product-actions">
               <button type="button" onClick={() => onFavorite(product.id)}>
