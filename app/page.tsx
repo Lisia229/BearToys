@@ -1,6 +1,6 @@
 "use client";
 
-import { ChangeEvent, FormEvent, useMemo, useState } from "react";
+import { ChangeEvent, FormEvent, useEffect, useMemo, useState } from "react";
 
 type Page = "shop" | "product" | "favorites" | "checkout" | "guide" | "member" | "admin" | "about";
 type ProductStatus = "現貨" | "預購" | "完售";
@@ -366,6 +366,21 @@ export default function Home() {
   const [editingProductId, setEditingProductId] = useState<string | null>(null);
   const [productDraft, setProductDraft] = useState<ProductDraft>(emptyProductDraft);
 
+  useEffect(() => {
+    const root = document.documentElement;
+    const previousScrollBehavior = root.style.scrollBehavior;
+    root.style.scrollBehavior = "auto";
+    window.scrollTo(0, 0);
+    const frame = window.requestAnimationFrame(() => {
+      window.scrollTo(0, 0);
+      root.style.scrollBehavior = previousScrollBehavior;
+    });
+    return () => {
+      window.cancelAnimationFrame(frame);
+      root.style.scrollBehavior = previousScrollBehavior;
+    };
+  }, [page, selectedProductId]);
+
   const selectedProduct = products.find((product) => product.id === selectedProductId) ?? products[0];
   const categories = ["新品", "所有商品", "盲盒", "小賞", "一番賞", "吊飾", "公仔", "立牌"];
   const activeAnnouncements = announcements.filter((announcement) => announcement.status === "顯示中");
@@ -385,6 +400,17 @@ export default function Home() {
     });
   }, [category, products, search]);
 
+  const searchResults = useMemo(() => {
+    const keyword = search.trim().toLowerCase();
+    if (!keyword) return products.slice(0, 6);
+    return products.filter((product) =>
+      [product.name, product.category, product.description, product.status]
+        .join(" ")
+        .toLowerCase()
+        .includes(keyword)
+    );
+  }, [products, search]);
+
   const cartRows = Object.entries(cart)
     .map(([id, qty]) => {
       const product = products.find((item) => item.id === id);
@@ -402,6 +428,11 @@ export default function Home() {
     setPage(nextPage);
     setMemberMenuOpen(false);
     setSearchOpen(false);
+  }
+
+  function goHome() {
+    setCategory("新品");
+    navigate("shop");
   }
 
   function addToCart(productId: string) {
@@ -632,7 +663,7 @@ export default function Home() {
           </div>
         </div>
         <div className="header-main">
-          <button className="brand" type="button" onClick={() => navigate("shop")} aria-label="熊賀勝首頁">
+          <button className="brand" type="button" onClick={goHome} aria-label="熊賀勝首頁">
             <img src="/bear-toys-logo.png" alt="" />
             <span>
               <strong>熊賀勝</strong>
@@ -640,26 +671,12 @@ export default function Home() {
             </span>
           </button>
 
-          <nav className="user-actions" aria-label="主要功能">
-            <button className="icon-button" type="button" onClick={() => setSearchOpen(true)}>
-              SEARCH
-            </button>
-            <button className="icon-button" type="button" onClick={() => navigate("favorites")}>
-              收藏 {favorites.length}
-            </button>
-            <button className="icon-button" type="button" onClick={() => (user ? setMemberMenuOpen(!memberMenuOpen) : setAuthOpen(true))}>
-              {user ? user.name : "登入"}
-            </button>
-            <button className="cart-pill" type="button" onClick={() => navigate("checkout")}>
-              購物車 <strong>{cartRows.reduce((sum, row) => sum + row.qty, 0)}</strong>
-            </button>
-          </nav>
         </div>
 
         <nav className="category-tabs" aria-label="商品分類">
           {categories.map((item) => (
             <button
-              className={`${category === item ? "active" : ""} ${item === "小賞" ? "highlight" : ""}`}
+              className={category === item ? "active" : ""}
               key={item}
               type="button"
               onClick={() => {
@@ -673,18 +690,61 @@ export default function Home() {
         </nav>
 
         {searchOpen && (
-          <section className="search-panel" aria-label="搜尋商品">
-            <button className="search-close" type="button" aria-label="關閉搜尋" onClick={() => setSearchOpen(false)} />
-            <label className="search-field">
-              <span>SEARCH</span>
-              <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="搜尋盲盒、小賞、角色名..." autoFocus />
-            </label>
-            <div className="search-chips">
-              {["盲盒", "小賞", "預購", "公仔", "吊飾", "NARUTO", "三麗鷗"].map((keyword) => (
-                <button key={keyword} type="button" onClick={() => setSearch(keyword)}>
-                  {keyword}
+          <section className="search-panel" role="dialog" aria-modal="true" aria-label="搜尋商品">
+            <div className="search-panel-inner">
+              <header className="search-panel-head">
+                <button className="search-brand" type="button" onClick={goHome} aria-label="回到熊賀勝首頁">
+                  <img src="/bear-toys-logo.png" alt="" />
+                  <span><strong>熊賀勝</strong><small>SEARCH STORE</small></span>
                 </button>
-              ))}
+                <button className="search-close" type="button" aria-label="關閉搜尋" onClick={() => setSearchOpen(false)} />
+              </header>
+              <div className="search-intro">
+                <p className="eyebrow">FIND YOUR FAVORITE</p>
+                <h2>今天想收藏什麼？</h2>
+              </div>
+              <label className="search-field">
+                <span>SEARCH</span>
+                <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="搜尋商品、角色或分類" autoFocus />
+                {search && <button type="button" onClick={() => setSearch("")} aria-label="清除搜尋">清除</button>}
+              </label>
+              <div className="search-chips" aria-label="熱門搜尋">
+                {["盲盒", "小賞", "預購", "公仔", "吊飾", "NARUTO", "三麗鷗"].map((keyword) => (
+                  <button className={search === keyword ? "active" : ""} key={keyword} type="button" onClick={() => setSearch(keyword)}>
+                    {keyword}
+                  </button>
+                ))}
+              </div>
+              <div className="search-result-heading">
+                <div>
+                  <p className="eyebrow">{search ? "SEARCH RESULTS" : "POPULAR NOW"}</p>
+                  <h3>{search ? `「${search}」的搜尋結果` : "熱門商品"}</h3>
+                </div>
+                <span>{searchResults.length} 件商品</span>
+              </div>
+              {searchResults.length > 0 ? (
+                <div className="search-results">
+                  {searchResults.map((product) => (
+                    <button className="search-result-card" type="button" key={product.id} onClick={() => navigate("product", product.id)}>
+                      <span className={`search-result-image ${product.image ? "has-image" : ""}`} style={{ background: product.image ? undefined : product.color }}>
+                        {product.image && <img src={product.image} alt="" />}
+                        <b>{product.status}</b>
+                      </span>
+                      <span className="search-result-copy">
+                        <small>{product.category}</small>
+                        <strong>{product.name}</strong>
+                        <span><b>{currency.format(product.price)}</b><i>庫存 {product.stock}</i></span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="search-empty">
+                  <strong>沒有找到符合的商品</strong>
+                  <span>換個角色名稱、分類或較短的關鍵字試試看。</span>
+                  <button type="button" onClick={() => setSearch("")}>查看熱門商品</button>
+                </div>
+              )}
             </div>
           </section>
         )}
@@ -711,8 +771,10 @@ export default function Home() {
 
       {page === "shop" && (
         <section className="page active">
-          <div className="shop-hero-wrap">
-            <div className="shop-hero">
+          {category === "新品" && (
+            <>
+              <div className="shop-hero-wrap">
+                <div className="shop-hero">
               <div className="hero-visual">
                 <img src="/og.png" alt="熊賀勝本週精選玩具" />
                 <span className="hero-badge">本週精選</span>
@@ -735,7 +797,12 @@ export default function Home() {
               <p className="eyebrow">TODAY AT BEAR TOYS</p>
               <h2>今天想找什麼？</h2>
               <div className="quick-grid">
-                <button type="button" onClick={() => setCategory("新品")}><b>NEW</b><span>新品到貨</span></button>
+                <button
+                  type="button"
+                  onClick={() => document.getElementById("latest-products")?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                >
+                  <b>NEW</b><span>新品到貨</span>
+                </button>
                 <button type="button" onClick={() => setCategory("小賞")}><b>LUCKY</b><span>熱門小賞</span></button>
                 <button type="button" onClick={() => navigate("favorites")}><b>LOVE</b><span>我的收藏</span></button>
                 <button type="button" onClick={() => navigate("member")}><b>MEMBER</b><span>訂單查詢</span></button>
@@ -744,15 +811,17 @@ export default function Home() {
                 <span>高雄實體門市</span>
                 <strong>信國路 32 號 →</strong>
               </button>
-            </aside>
-          </div>
-          <div className="trust-strip">
-            <span><b>01</b> 精選正版玩具</span>
-            <span><b>02</b> 現貨快速出貨</span>
-            <span><b>03</b> 7-11／宅配</span>
-            <span><b>04</b> 會員訂單追蹤</span>
-          </div>
-          <div className="shop-section-head">
+                </aside>
+              </div>
+              <div className="trust-strip">
+                <span><b>01</b> 精選正版玩具</span>
+                <span><b>02</b> 現貨快速出貨</span>
+                <span><b>03</b> 7-11／宅配</span>
+                <span><b>04</b> 會員訂單追蹤</span>
+              </div>
+            </>
+          )}
+          <div className="shop-section-head" id="latest-products">
             <div>
               <p className="eyebrow">EXPLORE THE COLLECTION</p>
               <h2>{category === "新品" ? "最新上架" : category}</h2>
@@ -1130,13 +1199,16 @@ export default function Home() {
         </section>
       </footer>
 
-      <nav className="dock-nav" aria-label="快速導覽">
-        <button className={page === "shop" ? "active" : ""} type="button" onClick={() => navigate("shop")}><span>首頁</span></button>
-        <button type="button" onClick={() => { setCategory("小賞"); navigate("shop"); }}><span>小賞</span></button>
-        <button className={page === "favorites" ? "active" : ""} type="button" onClick={() => navigate("favorites")}><span>收藏</span></button>
-        <button className={page === "member" ? "active" : ""} type="button" onClick={() => navigate("member")}><span>我的</span></button>
-        <button className="dock-cart" type="button" onClick={() => navigate("checkout")}><span>購物車</span><b>{cartRows.reduce((sum, row) => sum + row.qty, 0)}</b></button>
-      </nav>
+      {!searchOpen && (
+        <nav className="dock-nav" aria-label="快速導覽">
+          <button className={page === "shop" && category !== "小賞" && !memberMenuOpen ? "active" : ""} type="button" onClick={goHome}><i>HOME</i><span>首頁</span></button>
+          <button type="button" onClick={() => { setSearchOpen(true); setMemberMenuOpen(false); }}><i>SEARCH</i><span>搜尋</span></button>
+          <button className={page === "shop" && category === "小賞" && !memberMenuOpen ? "active" : ""} type="button" onClick={() => { setCategory("小賞"); navigate("shop"); }}><i>LUCKY</i><span>小賞</span></button>
+          <button className={page === "favorites" && !memberMenuOpen ? "active" : ""} type="button" onClick={() => navigate("favorites")}><i>LOVE</i><span>收藏</span>{favorites.length > 0 && <b>{favorites.length}</b>}</button>
+          <button className={page === "member" || memberMenuOpen ? "active" : ""} type="button" onClick={() => { user ? setMemberMenuOpen(!memberMenuOpen) : setAuthOpen(true); }}><i>MEMBER</i><span>{user ? user.name : "登入"}</span></button>
+          <button className={`dock-cart ${page === "checkout" && !memberMenuOpen ? "active" : ""}`} type="button" onClick={() => navigate("checkout")}><i>CART</i><span>購物車</span><b>{cartRows.reduce((sum, row) => sum + row.qty, 0)}</b></button>
+        </nav>
+      )}
 
       {authOpen && (
         <div className="dialog-backdrop" role="presentation">
