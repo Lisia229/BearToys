@@ -6,6 +6,7 @@
     "node": ">=22.13.0"
   },
   "scripts": {
+    "build:pages": "npm run styles:build && GITHUB_PAGES=true next build --webpack",
     "dev": "concurrently --kill-others --names SASS,APP --prefix-colors yellow,cyan \"npm:styles:watch\" \"npm:dev:app\"",
     "dev:app": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext dev",
     "prebuild": "npm run styles:build",

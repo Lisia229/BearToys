@@ -664,7 +664,7 @@ export default function Home() {
         </div>
         <div className="header-main">
           <button className="brand" type="button" onClick={goHome} aria-label="熊賀勝首頁">
-            <img src="/bear-toys-logo.png" alt="" />
+            <img src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/bear-toys-logo.png`} alt="" />
             <span>
               <strong>熊賀勝</strong>
               <small>Bear Toys Select</small>
@@ -694,7 +694,7 @@ export default function Home() {
             <div className="search-panel-inner">
               <header className="search-panel-head">
                 <button className="search-brand" type="button" onClick={goHome} aria-label="回到熊賀勝首頁">
-                  <img src="/bear-toys-logo.png" alt="" />
+                  <img src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/bear-toys-logo.png`} alt="" />
                   <span><strong>熊賀勝</strong><small>SEARCH STORE</small></span>
                 </button>
                 <button className="search-close" type="button" aria-label="關閉搜尋" onClick={() => setSearchOpen(false)} />
@@ -776,7 +776,7 @@ export default function Home() {
               <div className="shop-hero-wrap">
                 <div className="shop-hero">
               <div className="hero-visual">
-                <img src="/og.png" alt="熊賀勝本週精選玩具" />
+                <img src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/og.png`} alt="熊賀勝本週精選玩具" />
                 <span className="hero-badge">本週精選</span>
               </div>
               <div className="hero-copy">
@@ -991,7 +991,7 @@ export default function Home() {
         <section className="page page-narrow">
           <PageTitle eyebrow="About Bear Toys" title="關於熊賀勝" text="高雄三民區實體玩具店，提供盲盒、小賞、預購與收藏玩具。" />
           <div className="story-panel">
-            <img src="/og.png" alt="熊賀勝品牌圖" />
+            <img src={`${process.env.NEXT_PUBLIC_BASE_PATH || ""}/og.png`} alt="熊賀勝品牌圖" />
             <div>
               <h2>選品、出貨、服務都用心</h2>
               <p>可以來門市逛逛，也可以在線上先收藏喜歡的款式。新品、抽賞公告與活動會同步更新。</p>
